@@ -35,8 +35,8 @@ case and deliver real-time performance. This repo provides performant client exa
     - Run commands
 
 ```bash
-git clone https://github.com/nvidia-riva/python-clients.git
-cd python-clients
+git clone https://github.com/MONATE-TEAM/riva-client.git
+cd riva-client
 git submodule init
 git submodule update --remote --recursive
 pip install -r requirements.txt
