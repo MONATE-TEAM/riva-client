@@ -66,17 +66,14 @@ async def websocket_endpoint(websocket: WebSocket):
     print("Client connected")
 
     try:
-        async for message in websocket.iter_bytes():  # Correct way to use iter_bytes()
-            print(f"Received audio chunk of size: {len(message)} bytes")
-
+        async for message in websocket.iter_bytes():
             response = riva_asr.offline_recognize(message, stream_config)
-
             if response.results and response.results[0].alternatives:
                 transcript = response.results[0].alternatives[0].transcript
                 print(f"Transcribed text: {transcript}")
-                await websocket.send_text(transcript)  # Send transcript back to client
+                await websocket.send_text(transcript)
             else:
-                print("No transcript available")
+                continue
 
     except Exception as e:
         print(f"WebSocket error: {e}")
