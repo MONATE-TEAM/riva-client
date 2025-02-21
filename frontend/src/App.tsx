@@ -14,8 +14,6 @@ function App() {
   const mediaStream = useRef<MediaStream | null>(null);
   const scriptProcessor = useRef<ScriptProcessorNode | null>(null);
 
-  let count = 0;
-
   const handleAudioUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -61,14 +59,7 @@ function App() {
         if (event.data)
         {
           console.log(event.data);
-          if (count > 3)
-            setOutput((prevOutput) => prevOutput + "\n" + event.data + " ");
-          else
-            setOutput((prevOutput) => prevOutput + event.data + " ");
-        }
-        else
-        {
-          count++;
+          setOutput((prevOutput) => prevOutput + event.data + " ");
         }
       };
       ws.current.onclose = () => console.log("WebSocket connection closed");
