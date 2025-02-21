@@ -1,103 +1,101 @@
-import { useState } from 'react';
-import { Button, Box, Typography, TextField } from '@mui/material';
-import axios from 'axios';
+import { useState, useRef } from "react";
+import { Button, Box, Typography, TextField } from "@mui/material";
+import axios from "axios";
+
+const WS_URL = "wss://0eef-24-189-85-157.ngrok-free.app/ws";
+const API_URL = "https://0eef-24-189-85-157.ngrok-free.app/asr/";
 
 function App() {
-  let ws: WebSocket;
-  let audioContext: AudioContext;
-  let mediaStream: MediaStream;
-  let scriptProcessor: ScriptProcessorNode;
-
   const [recording, setRecording] = useState(false);
-  const [output, setOutput] = useState('');
+  const [output, setOutput] = useState("");
 
-  const handleAudioUpload = async (event: any) => {
-    const file = event.target.files[0];
+  const ws = useRef<WebSocket | null>(null);
+  const audioContext = useRef<AudioContext | null>(null);
+  const mediaStream = useRef<MediaStream | null>(null);
+  const scriptProcessor = useRef<ScriptProcessorNode | null>(null);
 
-    if (file) {
-      const formData = new FormData();
-      formData.append("file", file);
+  const handleAudioUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
 
-      try {
-        const response = await axios.post("https://0eef-24-189-85-157.ngrok-free.app/asr/", formData, {
-          headers: { "Content-Type": "multipart/form-data" },
-        });
+    const formData = new FormData();
+    formData.append("file", file);
 
-        setOutput(response.data.transcript);
-      } catch (error) {
-        console.error("Error processing audio file:", error);
-        setOutput("Error in ASR processing.");
-      }
+    try {
+      const response = await axios.post(API_URL, formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+
+      setOutput(response.data.transcript);
+    } catch (error) {
+      console.error("Error processing audio file:", error);
+      setOutput("Error in ASR processing.");
     }
   };
 
   const handleStartRecording = async () => {
     setRecording(true);
-    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+
+    if (!navigator.mediaDevices?.getUserMedia) {
       alert("Web Audio API is not supported in your browser.");
       return;
     }
 
     try {
-      mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      audioContext = new AudioContext({ sampleRate: 16000 });
-      const source = audioContext.createMediaStreamSource(mediaStream);
+      mediaStream.current = await navigator.mediaDevices.getUserMedia({ audio: true });
+      audioContext.current = new AudioContext({ sampleRate: 16000 });
 
-      scriptProcessor = audioContext.createScriptProcessor(4096, 1, 1);
-      source.connect(scriptProcessor);
-      scriptProcessor.connect(audioContext.destination);
+      const source = audioContext.current.createMediaStreamSource(mediaStream.current);
+      scriptProcessor.current = audioContext.current.createScriptProcessor(8192, 1, 1);
 
-      ws = new WebSocket("wss://0eef-24-189-85-157.ngrok-free.app/ws");
-      ws.binaryType = "arraybuffer";
+      source.connect(scriptProcessor.current);
+      scriptProcessor.current.connect(audioContext.current.destination);
 
-      ws.onopen = () => {
-        console.log("Connected to WebSocket server");
+      ws.current = new WebSocket(WS_URL);
+      ws.current.binaryType = "arraybuffer";
+
+      ws.current.onopen = () => console.log("Connected to WebSocket server");
+      ws.current.onmessage = (event) => {
+        setOutput((prevOutput) => prevOutput + event.data + " ");
       };
+      ws.current.onclose = () => console.log("WebSocket connection closed");
 
-      scriptProcessor.onaudioprocess = (event) => {
-        if (ws.readyState === WebSocket.OPEN) {
-          let inputBuffer = event.inputBuffer.getChannelData(0);
-          let pcmBuffer = new Int16Array(inputBuffer.length);
+      scriptProcessor.current.onaudioprocess = (event) => {
+        if (ws.current?.readyState === WebSocket.OPEN) {
+          const inputBuffer = event.inputBuffer.getChannelData(0);
+          const pcmBuffer = new Int16Array(inputBuffer.length);
 
           for (let i = 0; i < inputBuffer.length; i++) {
             pcmBuffer[i] = Math.max(-1, Math.min(1, inputBuffer[i])) * 32767;
           }
 
-          ws.send(pcmBuffer.buffer);
+          console.log(pcmBuffer);
+
+          ws.current.send(pcmBuffer.buffer);
         }
-      };
-
-      ws.onmessage = (event) => {
-        setOutput(output + event.data + ' ');
-      };
-
-      ws.onclose = () => {
-        console.log("WebSocket connection closed");
       };
     } catch (error) {
       console.error("Error accessing microphone:", error);
       alert("Could not access the microphone. Please allow microphone access.");
+      setRecording(false);
     }
   };
 
   const handleStopRecording = () => {
     setRecording(false);
-    if (scriptProcessor) {
-      scriptProcessor.disconnect();
-    }
-    if (mediaStream) {
-      mediaStream.getTracks().forEach(track => track.stop());
-    }
-    if (audioContext) {
-      audioContext.close();
-    }
-    if (ws) {
-      ws.close();
+
+    scriptProcessor.current?.disconnect();
+    mediaStream.current?.getTracks().forEach((track) => track.stop());
+    audioContext.current?.close();
+
+    if (ws.current) {
+      ws.current.close();
+      ws.current = null;
     }
   };
 
   return (
-    <Box sx={{ width: '100%', padding: 2, marginY: "40px" }}>
+    <Box sx={{ width: "100%", padding: 2, marginY: "40px" }}>
       <Typography
         variant="h2"
         sx={{
@@ -107,11 +105,10 @@ function App() {
           textShadow: "4px 4px 10px rgba(0, 0, 0, 0.5)",
         }}
       >
-
-        Real-time translation & audio file ASR
+        Real-time Translation & Audio File ASR
       </Typography>
 
-      <Box sx={{ display: 'flex', justifyContent: 'center', gap: 5 }}>
+      <Box sx={{ display: "flex", justifyContent: "center", gap: 5, marginTop: 3 }}>
         <Button variant="contained" color="primary" onClick={handleStartRecording} disabled={recording}>
           Start Recording
         </Button>
@@ -133,21 +130,21 @@ function App() {
           fontSize: "16px",
           marginX: "400px",
           marginY: "50px",
-          justifyContent: 'center',
-          "&:hover": {
-            borderColor: "#ff8a00",
-          },
+          display: "block",
+          textAlign: "center",
+          "&:hover": { borderColor: "#ff8a00" },
         }}
       />
 
-      <Box sx={{ display: 'flex', justifyContent: 'space-around', marginY: 5 }}>
-        <TextField sx={{ marginX: 5 }}
+      <Box sx={{ display: "flex", justifyContent: "space-around", marginY: 5 }}>
+        <TextField
+          sx={{ marginX: 5 }}
           label="Real-time Translation"
           variant="outlined"
           value={output}
           fullWidth
           multiline
-          rows={14}
+          rows={10}
         />
       </Box>
     </Box>
