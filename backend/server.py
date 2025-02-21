@@ -55,9 +55,9 @@ async def transcribe_audio(file: UploadFile = File(...)):
     formatted_transcript = "\n".join( 
         [f"Speaker {speaker}: {' '.join(words)}" for speaker, words in sorted(speaker_transcripts.items())] ) 
     
-    print(formatted_transcript)
     return {"transcript": formatted_transcript}
 
+count = 0
 
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
@@ -71,9 +71,12 @@ async def websocket_endpoint(websocket: WebSocket):
             if response.results and response.results[0].alternatives:
                 transcript = response.results[0].alternatives[0].transcript
                 print(f"Transcribed text: {transcript}")
+                if count > 3:
+                    transcript = f"\n{transcript}"
+                    count = 0
                 await websocket.send_text(transcript)
             else:
-                continue
+                count += 1
 
     except Exception as e:
         print(f"WebSocket error: {e}")
