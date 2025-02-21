@@ -56,7 +56,11 @@ function App() {
 
       ws.current.onopen = () => console.log("Connected to WebSocket server");
       ws.current.onmessage = (event) => {
-        setOutput((prevOutput) => prevOutput + event.data + " ");
+        if (event.data)
+        {
+          console.log(event.data);
+          setOutput((prevOutput) => prevOutput + event.data + " ");
+        }
       };
       ws.current.onclose = () => console.log("WebSocket connection closed");
 
@@ -68,8 +72,6 @@ function App() {
           for (let i = 0; i < inputBuffer.length; i++) {
             pcmBuffer[i] = Math.max(-1, Math.min(1, inputBuffer[i])) * 32767;
           }
-
-          console.log(pcmBuffer);
 
           ws.current.send(pcmBuffer.buffer);
         }
