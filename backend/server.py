@@ -57,8 +57,6 @@ async def transcribe_audio(file: UploadFile = File(...)):
     
     return {"transcript": formatted_transcript}
 
-count = 0
-
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
     """Handles WebSocket connections for real-time speech transcription."""
@@ -66,6 +64,7 @@ async def websocket_endpoint(websocket: WebSocket):
     print("Client connected")
 
     try:
+        count = 0
         async for message in websocket.iter_bytes():
             response = riva_asr.offline_recognize(message, stream_config)
             if response.results and response.results[0].alternatives:
