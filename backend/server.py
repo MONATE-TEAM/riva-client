@@ -41,9 +41,9 @@ async def transcribe_audio(file: UploadFile = File(...)):
     if not file.filename.lower().endswith(".wav"):
         raise ValueError("Invalid file format! Only .wav files are allowed.")
 
-    content = await file.read()
+    # content = await file.read()
 
-    audio = AudioSegment.from_raw(content)
+    audio = AudioSegment.from_file(file)
     audio = audio.set_frame_rate(16000)
     audio = audio.set_channels(1)
     audio = audio.set_sample_width(2)
