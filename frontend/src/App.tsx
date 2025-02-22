@@ -2,9 +2,6 @@ import { useState, useRef } from "react";
 import { Button, Box, Typography, TextField } from "@mui/material";
 import axios from "axios";
 
-const WS_URL = "wss://0eef-24-189-85-157.ngrok-free.app/ws";
-const API_URL = "https://0eef-24-189-85-157.ngrok-free.app/asr/";
-
 function App() {
   const [recording, setRecording] = useState(false);
   const [output, setOutput] = useState("");
@@ -22,7 +19,7 @@ function App() {
     formData.append("file", file);
 
     try {
-      const response = await axios.post(API_URL, formData, {
+      const response = await axios.post(import.meta.env.VITE_API_URL, formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
 
@@ -51,7 +48,7 @@ function App() {
       source.connect(scriptProcessor.current);
       scriptProcessor.current.connect(audioContext.current.destination);
 
-      ws.current = new WebSocket(WS_URL);
+      ws.current = new WebSocket(import.meta.env.VITE_WS_URL);
       ws.current.binaryType = "arraybuffer";
 
       ws.current.onopen = () => console.log("Connected to WebSocket server");
