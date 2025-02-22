@@ -4,3 +4,4 @@ grpcio-tools==1.67.1
 fastapi
 uvicorn
 websockets
+pydub

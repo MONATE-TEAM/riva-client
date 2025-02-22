@@ -2,6 +2,7 @@ from fastapi import FastAPI, File, UploadFile, WebSocket
 import uvicorn
 import riva.client
 from fastapi.middleware.cors import CORSMiddleware 
+from pydub import AudioSegment
 
 app = FastAPI()
 
@@ -41,6 +42,12 @@ async def transcribe_audio(file: UploadFile = File(...)):
         raise ValueError("Invalid file format! Only .wav files are allowed.")
 
     content = await file.read()
+
+    audio = AudioSegment.from_raw(content)
+    audio = audio.set_frame_rate(16000)
+    audio = audio.set_channels(1)
+    audio = audio.set_sample_width(2)
+    content = AudioSegment.export(audio, format="wav").read()
 
     response = riva_asr.offline_recognize(content, file_config)
 
