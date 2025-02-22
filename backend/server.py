@@ -39,9 +39,6 @@ riva.client.asr.add_speaker_diarization_to_config(stream_config, diarization_ena
 
 @app.post("/asr/")
 async def transcribe_audio(file: UploadFile = File(...)):
-    if not file.filename.lower().endswith(".wav"):
-        raise ValueError("Invalid file format! Only .wav files are allowed.")
-
     content = await file.read()
 
     audio = AudioSegment.from_file(io.BytesIO(content))

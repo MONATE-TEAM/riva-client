@@ -104,7 +104,7 @@ function App() {
           textShadow: "4px 4px 10px rgba(0, 0, 0, 0.5)",
         }}
       >
-        Real-time Translation & Audio File ASR
+        Real-time Transcript & Audio File ASR
       </Typography>
 
       <Box sx={{ display: "flex", justifyContent: "center", gap: 5, marginTop: 3 }}>
@@ -138,7 +138,7 @@ function App() {
       <Box sx={{ display: "flex", justifyContent: "space-around", marginY: 5 }}>
         <TextField
           sx={{ marginX: 5 }}
-          label="Real-time Translation"
+          label="Transcripts"
           variant="outlined"
           value={output}
           fullWidth
