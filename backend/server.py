@@ -58,8 +58,8 @@ async def transcribe_audio(file: UploadFile = File(...)):
                 speaker_transcripts[speaker_tag] = [] 
             speaker_transcripts[speaker_tag].append({
                 "word": word.word,
-                "start_time": word.start_time.seconds + word.start_time.nanos / 1e9,
-                "end_time": word.end_time.seconds + word.end_time.nanos / 1e9
+                "start_time": word.start_time,
+                "end_time": word.end_time,
             }) 
             
     formatted_transcript = "\n".join( 
