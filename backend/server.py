@@ -56,15 +56,17 @@ async def transcribe_audio(file: UploadFile = File(...)):
             speaker_tag = word.speaker_tag if word.speaker_tag else 0 
             if speaker_tag not in speaker_transcripts: 
                 speaker_transcripts[speaker_tag] = [] 
-            speaker_transcripts[speaker_tag].append(word.word) 
+            speaker_transcripts[speaker_tag].append({
+                "word": word.word,
+                "start_time": word.start_time.seconds + word.start_time.nanos / 1e9,
+                "end_time": word.end_time.seconds + word.end_time.nanos / 1e9
+            }) 
             
     formatted_transcript = "\n".join( 
-        [f"Speaker {speaker}: {' '.join(words)}" for speaker, words in sorted(speaker_transcripts.items())] ) 
-    
-    json_data = [word for word in response.results[0].alternatives[0].words]
+        [f"Speaker {speaker}: {' '.join([word.word for word in words])}" for speaker, words in sorted(speaker_transcripts.items())] ) 
     
     with open("data.json", "w") as file:
-        json.dump(json_data, file, indent=4)
+        json.dump(formatted_transcript, file, indent=4)
     
     return {"transcript": formatted_transcript}
 
