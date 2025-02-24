@@ -66,7 +66,7 @@ async def transcribe_audio(file: UploadFile = File(...)):
         [f"Speaker {speaker}: {' '.join([word['word'] for word in words])}" for speaker, words in sorted(speaker_transcripts.items())] ) 
     
     with open("data.json", "w") as file:
-        json.dump(formatted_transcript, file, indent=4)
+        json.dump(speaker_transcripts, file, indent=4)
     
     return {"transcript": formatted_transcript}
 
