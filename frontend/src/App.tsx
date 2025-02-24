@@ -120,7 +120,7 @@ function App() {
         component="input"
         type="file"
         onChange={handleAudioUpload}
-        accept="audio/*"
+        accept=".mp3,.wav,.flv,.ogg"
         sx={{
           padding: "10px",
           border: "2px dashed #6200ea",

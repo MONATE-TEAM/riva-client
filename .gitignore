@@ -186,4 +186,4 @@ tests/integration/tts/outputs
 riva/client/proto/*_pb2.py
 riva/client/proto/*_pb2_grpc.py
 
-data.json
+backend/data/

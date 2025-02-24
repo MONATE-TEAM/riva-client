@@ -5,6 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydub import AudioSegment
 import io
 import json
+from datetime import datetime
 
 app = FastAPI()
 
@@ -65,7 +66,7 @@ async def transcribe_audio(file: UploadFile = File(...)):
     formatted_transcript = "\n".join( 
         [f"Speaker {speaker}: {' '.join([word['word'] for word in words])}" for speaker, words in speaker_transcripts.items()] ) 
     
-    with open("data.json", "w") as file:
+    with open(f"data/data_{datetime.now()}.json", "w") as file:
         json.dump(speaker_transcripts, file, indent=4)
     
     return {"transcript": formatted_transcript}
