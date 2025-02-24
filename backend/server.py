@@ -4,6 +4,7 @@ import riva.client
 from fastapi.middleware.cors import CORSMiddleware 
 from pydub import AudioSegment
 import io
+import json
 
 app = FastAPI()
 
@@ -56,9 +57,11 @@ async def transcribe_audio(file: UploadFile = File(...)):
             if speaker_tag not in speaker_transcripts: 
                 speaker_transcripts[speaker_tag] = [] 
             speaker_transcripts[speaker_tag].append(word.word) 
-
     formatted_transcript = "\n".join( 
         [f"Speaker {speaker}: {' '.join(words)}" for speaker, words in sorted(speaker_transcripts.items())] ) 
+    
+    with open("data.json", "w") as file:
+        json.dump(response, file, indent=4)
     
     return {"transcript": formatted_transcript}
 
